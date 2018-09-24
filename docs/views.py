@@ -10,7 +10,12 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from functools import wraps
 from django.contrib.admin.forms import AdminAuthenticationForm
-from django.contrib.auth.views import login
+
+try:
+    from django.contrib.auth.views import login
+except ImportError:
+    from django.contrib.auth.views import LoginView
+
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.utils.translation import ugettext as _
@@ -37,7 +42,10 @@ def superuser_required(view_func):
                 REDIRECT_FIELD_NAME: request.get_full_path(),
                 },
             }
-        return login(request, **defaults)
+        try:
+            return login(request, **defaults)
+        except TypeError:
+            return LoginView(request, **defaults)
     return _checklogin
 
 
